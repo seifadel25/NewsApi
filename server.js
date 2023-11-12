@@ -17,20 +17,19 @@ const client = new MongoClient(uri, {
 let collection; // Declare collection variable in outer scope
 
 async function startServer() {
-    try {
-      await client.connect();
-      collection = client.db("NewsDB").collection("NewsCollection");
-      app.listen(port, () => {
-        console.log(`Server running on http://localhost:${port}`);
-      });
-    } catch (err) {
-      console.error('Database connection failed', err);
-      process.exit(1);
-    }
+  try {
+    await client.connect();
+    collection = client.db("NewsDB").collection("NewsCollection");
+    app.listen(port, () => {
+      console.log(`Server running on http://localhost:${port}`);
+    });
+  } catch (err) {
+    console.error("Database connection failed", err);
+    process.exit(1);
   }
-  
-  startServer();
-  
+}
+
+startServer();
 
 app.get("/api/news", async (req, res) => {
   try {
@@ -57,13 +56,13 @@ app.get("/api/news", async (req, res) => {
 });
 
 function modifyUrl(url) {
-    if (url.includes('.com')) {
-      return url.replace('.com', '.com.');
-    } else if (url.includes('.net')) {
-      return url.replace('.net', '.net.');
-    }
-    return url;
+  if (url.includes(".com")) {
+    return url.replace(".com", ".com.");
+  } else if (url.includes(".net")) {
+    return url.replace(".net", ".net.");
   }
+  return url;
+}
 
 async function fetchDataFromAPI() {
   // Implement the logic to fetch data from the API
@@ -80,7 +79,7 @@ async function fetchDataFromAPI() {
     .filter((article) => article.headline.trim() !== "")
     .slice(0, 10);
 
-  const modifiedArticles = articles.map(article => {
+  const modifiedArticles = articles.map((article) => {
     if (article.url) {
       article.url = modifyUrl(article.url);
     }
@@ -92,3 +91,19 @@ async function fetchDataFromAPI() {
 
   return modifiedArticles;
 }
+setInterval(fetchAndStoreData, 30 * 60 * 1000); // 30 minutes
+
+async function fetchAndStoreData() {
+  try {
+    const data = await fetchDataFromAPI();
+    await collection.insertOne({
+      timestamp: new Date(),
+      data: data,
+    });
+    console.log("Data fetched and stored:", new Date());
+  } catch (error) {
+    console.error("Error fetching or storing data:", error);
+  }
+}
+
+fetchAndStoreData();
