@@ -7,7 +7,7 @@ require("dotenv").config();
 const app = express();
 app.use(cors());
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 const uri = process.env.MONGODB_URI; // Use environment variable for MongoDB URI
 const client = new MongoClient(uri, {
@@ -97,7 +97,6 @@ setInterval(fetchAndStoreData, 30 * 60 * 1000); // 30 minutes
 async function fetchAndStoreData() {
   try {
     const data = await fetchDataFromAPI();
-    await EnCollection.deleteMany({});
     await collection.insertOne({
       timestamp: new Date(),
       data: data,
@@ -111,35 +110,35 @@ async function fetchAndStoreData() {
 app.get("/api/EnNews", async (req, res) => {
   try {
     const today = new Date().toISOString().split("T")[0]; // Format current date as 'YYYY-MM-DD'
-
     const cachedData = await EnCollection.findOne({ cacheKey: today });
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60000);
+    const aDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
 
-    if (cachedData && cachedData.timestamp > thirtyMinutesAgo) {
+    if (cachedData && cachedData.timestamp > aDayAgo) {
       return res.json(cachedData.data);
     } else {
       const newData = await fetchDataFromAPI2(); // Make sure this function is defined and fetches data from the API
+      // Store new data with the current date
       await EnCollection.updateOne(
         { cacheKey: today },
         { $set: { data: newData, timestamp: new Date() } },
         { upsert: true }
       );
-
       return res.json(newData);
     }
   } catch (error) {
     res.status(500).send(error.message);
   }
 });
-
 async function fetchDataFromAPI2() {
+  try {
   // Implement the logic to fetch data from the API
   const options = {
     method: "POST",
     url: "https://newsnow.p.rapidapi.com/newsv2",
     headers: {
       "content-type": "application/json",
-      "X-RapidAPI-Key": process.env.RAPIDAPI_KEY, // Use environment variable for security
+      //'X-RapidAPI-Key': '',
+      "X-RapidAPI-Key": process.env.RAPIDAPI_KEY3, // Use environment variable for security
       "X-RapidAPI-Host": "newsnow.p.rapidapi.com",
     },
     data: {
@@ -171,7 +170,12 @@ async function fetchDataFromAPI2() {
   });
 
   return modifiedArticles;
+} catch (error) {
+  console.error("Error fetching data from API:", error);
+  throw error; // Re-throw the error to be caught by the calling function
 }
+}
+
 async function fetchAndStoreData2() {
   try {
     const data = await fetchDataFromAPI2();
