@@ -97,6 +97,7 @@ setInterval(fetchAndStoreData, 30 * 60 * 1000); // 30 minutes
 async function fetchAndStoreData() {
   try {
     const data = await fetchDataFromAPI();
+    await EnCollection.deleteMany({});
     await collection.insertOne({
       timestamp: new Date(),
       data: data,
