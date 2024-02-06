@@ -131,49 +131,43 @@ app.get("/api/EnNews", async (req, res) => {
 });
 async function fetchDataFromAPI2() {
   try {
-  // Implement the logic to fetch data from the API
-  const options = {
-    method: "POST",
-    url: "https://newsnow.p.rapidapi.com/newsv2",
-    headers: {
-      "content-type": "application/json",
-      //'X-RapidAPI-Key': '',
-      "X-RapidAPI-Key": process.env.RAPIDAPI_KEY3, // Use environment variable for security
-      "X-RapidAPI-Host": "newsnow.p.rapidapi.com",
-    },
-    data: {
-      query: "Palestine",
-      page: 1,
-      time_bounded: false,
-      from_date: "01/02/2023",
-      to_date: "05/06/2021",
-      location: "",
-      category: "",
-      source: "",
-    },
-  };
+    // Implement the logic to fetch data from the API
+    const options = {
+      method: "POST",
+      url: "https://newsnow.p.rapidapi.com/",
+      headers: {
+        "content-type": "application/json",
+        //'X-RapidAPI-Key': '',
+        "X-RapidAPI-Key": process.env.RAPIDAPI_KEY3, // Use environment variable for security      'X-RapidAPI-Host': 'newsnow.p.rapidapi.com'
+      },
+      data: {
+        text: "Palestine",
+        region: "all",
+        max_results: 25,
+      },
+    };
 
-  // Making the POST request
-  const response = await axios.request(options);
-  const articles = response.data.news
-    .filter((article) => article.title.trim() !== "")
-    .slice(0, 15);
+    // Making the POST request
+    const response = await axios.request(options);
+    const articles = response.data.news
+      .filter((article) => article.title.trim() !== "")
+      .slice(0, 15);
 
-  const modifiedArticles = articles.map((article) => {
-    if (article.url) {
-      article.url = modifyUrl(article.url);
-    }
-    if (article.image) {
-      article.image = modifyUrl(article.image);
-    }
-    return article;
-  });
+    const modifiedArticles = articles.map((article) => {
+      if (article.url) {
+        article.url = modifyUrl(article.url);
+      }
+      if (article.image) {
+        article.image = modifyUrl(article.image);
+      }
+      return article;
+    });
 
-  return modifiedArticles;
-} catch (error) {
-  console.error("Error fetching data from API:", error);
-  throw error; // Re-throw the error to be caught by the calling function
-}
+    return modifiedArticles;
+  } catch (error) {
+    console.error("Error fetching data from API:", error);
+    throw error; // Re-throw the error to be caught by the calling function
+  }
 }
 
 async function fetchAndStoreData2() {
@@ -185,7 +179,10 @@ async function fetchAndStoreData2() {
       data: data,
     });
 
-    console.log("Data fetched, previous data deleted, and new data stored:", new Date());
+    console.log(
+      "Data fetched, previous data deleted, and new data stored:",
+      new Date()
+    );
   } catch (error) {
     console.error("Error fetching or storing data:", error);
   }
