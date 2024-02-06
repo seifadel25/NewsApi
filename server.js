@@ -164,7 +164,7 @@ async function fetchDataFromAPI2() {
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
         // Construct the custom formatted date string
-        article.DateF = `${day}-${month}-${year} ${hours}:${minutes}`;
+        article.dateF = `${day}-${month}-${year} ${hours}:${minutes}`;
       }
       if (article.url) {
         article.url = modifyUrl(article.url);
